@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+</head>
+
+<body>
+  <section>
+    <form hx-post="/messages" hx-target="#messages" hx-swap="outerHTML">
+      <label for="user">User</label>
+      <br>
+      <input type="text" name="user" id="user" required>
+      <br>
+      <label for="message">Message</label>
+      <br>
+      <input type="text" name="message" id="message" required>
+      <br>
+      <br>
+      <button type="submit">Submit</button>
+      <button hx-get="/messages" hx-swap="outerHTML" hx-target="#messages">Update</button>
+      <button hx-delete="/messages" hx-swap="outerHTML" hx-target="#messages">Delete all</button>
+    </form>
+
+    <h4>Messages:</h4>
+    <div id="messages">
+      {{ range .Messages }}
+      <p>{{ . }}</p>
+      {{ end }}
+    </div>
+
+    <button hx-get="/messages" hx-swap="outerHTML" hx-target="#messages">Update</button>
+  </section>
+</body>
+
+</html>
