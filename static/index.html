@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <script src="htmx.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <section hx-ext="ws" ws-connect="/echo">
+    <h1>Websocket chat</h1>
+    <h4>Notifications</h4>
+    <div id="notifications"></div>
+    <h4>Chat room</h4>
+    <div id="chat_room"></div>
+    <form id="form" ws-send>
+      <label for="chat_message">Enter message</label>
+      <input name="chat_message" />
+      <button type="submit">Send</button>
+    </form>
+  </section>
+</body>
+
+</html>
