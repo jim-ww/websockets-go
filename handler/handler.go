@@ -30,7 +30,9 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 
 	defer func() {
 		wsh.srv.RemoveClient(client)
-		conn.Close()
+		if err := conn.Close(); err != nil {
+			c.Logger().Errorf("Error closing WebSocket connection: %v", err)
+		}
 		c.Logger().Infof("Client %s disconnected", client.ID.String())
 	}()
 
@@ -53,11 +55,11 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 		var payload RequestPayload
 		if err = conn.ReadJSON(&payload); err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				c.Logger().Error("WebSocket error:", err)
+				c.Logger().Errorf("Unexpected WebSocket error: %v", err)
 			} else {
-				c.Logger().Infof("Client %s disconnected", client.ID.String())
+				c.Logger().Infof("Client %s disconnected: %v", client.ID.String(), err)
 			}
-			return err
+			break
 		}
 
 		switch payload.Type {
@@ -74,6 +76,7 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 			c.Logger().Error("Unknown payload type")
 		}
 	}
+	return nil
 }
 
 func (wsh *WSHandler) sendMessages(c echo.Context, conn *websocket.Conn) {
