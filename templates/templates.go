@@ -1,28 +1,52 @@
 package templates
 
 import (
-	"fmt"
+	"bytes"
+	"html/template"
 
 	"example.com/m/store"
 )
 
-func MessagesHtml(messages ...*store.Message) string {
-	res := fmt.Sprintf("<div id=\"messages\">")
-	for _, msg := range messages {
-		res += wrapInDiv(fmt.Sprintf("[%s]: %s", msg.ClientID.String(), msg.Text))
+const (
+	messagesHTML = `
+	<div id="messages">
+		{{ range .Messages }}
+		<div>{{ .ClientID }}: {{ .Text }}</div>
+		{{ end }}
+	</div>`
+	notificationsHTML = `
+	<div id="notifications">
+		{{ range .Notifications }}
+		<div>{{ . }}</div>
+		{{ end }}
+	</div>`
+)
+
+var messagesTemplate = template.Must(template.New("messages").Parse(messagesHTML))
+var notificationsTemplate = template.Must(template.New("notifications").Parse(notificationsHTML))
+
+func MessagesHtml(messages ...*store.Message) (string, error) {
+	var buf bytes.Buffer
+	data := struct {
+		Messages []*store.Message
+	}{
+		Messages: messages,
 	}
-	return res + "</div"
+	if err := messagesTemplate.Execute(&buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
-func NotificationsHtml(notifications ...string) string {
-	res := fmt.Sprintf("<div id=\"notifications\">")
-	for _, notif := range notifications {
-		res += wrapInDiv(notif)
+func NotificationsHtml(notifications ...string) (string, error) {
+	var buf bytes.Buffer
+	data := struct {
+		Notifications []string
+	}{
+		Notifications: notifications,
 	}
-	return res + "</div"
-
-}
-
-func wrapInDiv(content string) string {
-	return "<div>" + content + "</div>"
+	if err := notificationsTemplate.Execute(&buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }

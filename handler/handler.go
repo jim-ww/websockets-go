@@ -39,7 +39,11 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 	wsh.srv.AddNotification(fmt.Sprintf("Client %s connected", client.ID.String()))
 
 	// notify other clients about new client
-	wsh.srv.Broadcast(c, []byte(templ.NotificationsHtml(wsh.srv.GetNotifications()...)))
+	notificationsHTML, err := templ.NotificationsHtml(wsh.srv.GetNotifications()...)
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	wsh.srv.Broadcast(c, []byte(notificationsHTML))
 
 	// initial load of messages & notifications
 	wsh.sendMessages(c, conn)
@@ -61,7 +65,11 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 			msg := store.NewMessage(client.ID, payload.Content)
 			wsh.srv.AddMessage(msg)
 			// notify other clients about new message
-			wsh.srv.Broadcast(c, []byte(templ.MessagesHtml(wsh.srv.GetMessages()...)))
+			messagesHTML, err := templ.MessagesHtml(wsh.srv.GetMessages()...)
+			if err != nil {
+				c.Logger().Error(err)
+			}
+			wsh.srv.Broadcast(c, []byte(messagesHTML))
 		default:
 			c.Logger().Error("Unknown payload type")
 		}
@@ -69,15 +77,21 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 }
 
 func (wsh *WSHandler) sendMessages(c echo.Context, conn *websocket.Conn) {
-	messagesHtml := templ.MessagesHtml(wsh.srv.GetMessages()...)
+	messagesHtml, err := templ.MessagesHtml(wsh.srv.GetMessages()...)
+	if err != nil {
+		c.Logger().Error(err)
+	}
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(messagesHtml)); err != nil {
 		c.Logger().Error(err)
 	}
 }
 
 func (wsh *WSHandler) sendNotifications(c echo.Context, conn *websocket.Conn) {
-	notificationsHtml := templ.NotificationsHtml(wsh.srv.GetNotifications()...)
-	if err := conn.WriteMessage(websocket.TextMessage, []byte(notificationsHtml)); err != nil {
+	notificationsHTML, err := templ.NotificationsHtml(wsh.srv.GetNotifications()...)
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	if err := conn.WriteMessage(websocket.TextMessage, []byte(notificationsHTML)); err != nil {
 		c.Logger().Error(err)
 	}
 }
