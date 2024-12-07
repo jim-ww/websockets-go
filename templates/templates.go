@@ -1,11 +1,15 @@
-package main
+package templates
 
-import "fmt"
+import (
+	"fmt"
 
-func MessagesHtml(messages ...*Message) string {
+	"example.com/m/store"
+)
+
+func MessagesHtml(messages ...*store.Message) string {
 	res := fmt.Sprintf("<div id=\"messages\">")
 	for _, msg := range messages {
-		res += wrapInDiv(fmt.Sprintf("[%s]:%s", msg.Client.ID.String(), msg.Text))
+		res += wrapInDiv(fmt.Sprintf("[%s]: %s", msg.ClientID.String(), msg.Text))
 	}
 	return res + "</div"
 }

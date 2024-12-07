@@ -1,49 +1,51 @@
-package main
+package store
 
 import (
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type Message struct {
-	Client *Client
-	Text   string
+	ClientID uuid.UUID
+	Text     string
 }
 
-func NewMessage(client *Client, text string) *Message {
+func NewMessage(clientID uuid.UUID, text string) *Message {
 	return &Message{
-		Client: client,
-		Text:   text,
+		ClientID: clientID,
+		Text:     text,
 	}
 }
 
-type Storage struct {
+type Store struct {
 	messages      []*Message
 	notifications []string
 	mu            sync.Mutex
 }
 
-func NewStorage() *Storage {
-	return &Storage{
+func NewStore() *Store {
+	return &Store{
 		messages:      []*Message{},
 		notifications: []string{},
 	}
 }
 
-func (s *Storage) GetMessages() []*Message {
+func (s *Store) GetMessages() []*Message {
 	return s.messages
 }
 
-func (s *Storage) GetNotifications() []string {
+func (s *Store) GetNotifications() []string {
 	return s.notifications
 }
 
-func (s *Storage) AddMessage(m *Message) {
+func (s *Store) AddMessage(m *Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.messages = append(s.messages, m)
 }
 
-func (s *Storage) AddNotification(notification string) {
+func (s *Store) AddNotification(notification string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.notifications = append(s.notifications, notification)
