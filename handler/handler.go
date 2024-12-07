@@ -33,7 +33,12 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 		if err := conn.Close(); err != nil {
 			c.Logger().Errorf("Error closing WebSocket connection: %v", err)
 		}
-		c.Logger().Infof("Client %s disconnected", client.ID.String())
+		wsh.srv.AddNotification(fmt.Sprintf("Client %s disconnected", client.ID.String()))
+		notifications, err := templ.NotificationsHtml(wsh.srv.GetNotifications()...)
+		if err != nil {
+			c.Logger().Errorf("Failed to execute notifications template %v", err)
+		}
+		wsh.srv.Broadcast(c, []byte(notifications))
 	}()
 
 	// add client to the server
@@ -56,8 +61,6 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 		if err = conn.ReadJSON(&payload); err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				c.Logger().Errorf("Unexpected WebSocket error: %v", err)
-			} else {
-				c.Logger().Infof("Client %s disconnected: %v", client.ID.String(), err)
 			}
 			break
 		}
