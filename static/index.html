@@ -6,33 +6,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home</title>
   <script src="htmx.min.js"></script>
+  <script src="htmx-ws.min.js"></script>
   <link rel="stylesheet" href="tailwind.css" />
 </head>
 
 <body>
-  <section hx-ext="ws" ws-connect="/echo" class="w-screen h-screen flex flex-col gap-4 p-4">
+  <section hx-ext="ws" ws-connect="/ws" class="w-screen h-screen flex flex-col gap-4 p-4">
     <h1 class="font-extrabold text-2xl text-center">Websocket chat</h1>
 
-    <section class="bg-slate-500 p-4">
+    <section class="bg-slate-400 p-4">
       <h3 class="underline text-center text-xl">Notifications</h3>
       <div id="notifications" class="p-4" hx-swap-oob="beforeend"></div>
     </section>
 
     <section class="bg-slate-400 p-4">
-      <h3 class="underline text-center text-xl">Chat room</h3>
-      <div id="chat_room"></div>
-    </section>
-
-    <form id="form" ws-send class="bg-slate-500 p-4">
       <h3 class="underline text-center text-xl">Messages</h3>
-      <div class="flex flex-col w-full">
-        <label for="chat_message">Enter message</label>
-        <div class="flex w-full">
-          <input name="chat_message" type="text" class="p-1 w-full" />
-          <button type="submit" class="bg-blue-600 rounded p-2 px-6">Send</button>
-        </div>
-      </div>
-    </form>
+      <div id="messages" hx-swap-oob="beforeend"></div>
+      <br />
+      <form ws-send class="flex w-full">
+        <input type="hidden" name="type" value="chat_message">
+        <input type="text" name="content" class="p-2 rounded w-full" placeholder="Enter message" />
+        <button type="submit" class="bg-blue-600 rounded p-2 px-8">Send</button>
+      </form>
+    </section>
 
   </section>
 </body>

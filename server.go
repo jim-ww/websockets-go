@@ -2,45 +2,62 @@ package main
 
 import (
 	"net/http"
+	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
-var (
-	msgs     = []string{"Hello", "World"}
-	upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
-)
-
-func main() {
-	e := echo.New()
-
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	e.GET("/ws", readSend)
-	e.Static("/", "static")
-
-	e.Logger.Fatal(e.Start(":8080"))
+type Client struct {
+	ID   uuid.UUID
+	Conn *websocket.Conn
 }
 
-func readSend(c echo.Context) error {
-	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	if err != nil {
-		return err
+func NewClient(conn *websocket.Conn) *Client {
+	return &Client{
+		ID:   uuid.New(),
+		Conn: conn,
 	}
-	defer ws.Close()
+}
 
-	for {
-		msgType, msg, err := ws.ReadMessage()
-		if err != nil {
-			c.Logger().Error(err)
-		}
-		c.Logger().Output().Write(msg)
+type Server struct {
+	clients  map[*Client]bool
+	mu       sync.Mutex
+	st       *Storage
+	upgrader websocket.Upgrader
+}
 
-		if err = ws.WriteMessage(msgType, msg); err != nil {
-			c.Logger().Error(err)
-		}
+func NewServer() *Server {
+	return &Server{
+		clients: make(map[*Client]bool),
+		st:      NewStorage(),
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin:     func(r *http.Request) bool { return true },
+		},
 	}
+}
+
+func (s *Server) Broadcast(c echo.Context, b []byte) {
+	for ws := range s.clients {
+		func(ws *websocket.Conn) {
+			if err := ws.WriteMessage(websocket.TextMessage, b); err != nil {
+				c.Logger().Error(err)
+			}
+		}(ws.Conn)
+	}
+}
+
+func (s *Server) AddClient(c *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.clients[c] = true
+}
+
+func (s *Server) RemoveClient(c *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.clients, c)
 }
