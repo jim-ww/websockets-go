@@ -50,3 +50,15 @@ func (s *Store) AddNotification(notification string) {
 	defer s.mu.Unlock()
 	s.notifications = append(s.notifications, notification)
 }
+
+func (s *Store) ClearNotifications() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.notifications = []string{}
+}
+
+func (s *Store) ClearMessages() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.messages = []*Message{}
+}

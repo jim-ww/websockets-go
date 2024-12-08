@@ -27,7 +27,17 @@ func (wsh *WSHandler) HandleWS(c echo.Context) error {
 		return err
 	}
 
-	client := server.NewClient(conn)
+	var client *server.Client
+
+	existingClientID, found := wsh.srv.GetByIP(c.RealIP())
+	if found {
+		client = server.NewClientWithID(conn, existingClientID)
+	} else {
+		client = server.NewClient(conn)
+		wsh.srv.AddIP(c.RealIP(), client.ID)
+	}
+
+	// wsHandler.srv.AddClient(client) // TODO
 
 	defer func() {
 		wsh.srv.RemoveClient(client)
@@ -101,6 +111,26 @@ func (wsh *WSHandler) sendNotifications(c echo.Context, conn *websocket.Conn) {
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(notificationsHTML)); err != nil {
 		c.Logger().Error(err)
 	}
+}
+
+func (wsh *WSHandler) ClearMessages(c echo.Context) error {
+	wsh.srv.Store.ClearMessages()
+	emptyMessagesHTML, err := templ.MessagesHtml()
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	wsh.srv.Broadcast(c, []byte(emptyMessagesHTML))
+	return nil
+}
+
+func (wsh *WSHandler) ClearNotifications(c echo.Context) error {
+	wsh.srv.Store.ClearNotifications()
+	emptyNotificationsHTML, err := templ.NotificationsHtml()
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	wsh.srv.Broadcast(c, []byte(emptyNotificationsHTML))
+	return nil
 }
 
 func Health(c echo.Context) error {

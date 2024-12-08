@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"example.com/m/store"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
@@ -15,24 +14,15 @@ type Store interface {
 	GetNotifications() []string
 	AddMessage(*store.Message)
 	AddNotification(string)
-}
-
-type Client struct {
-	ID   uuid.UUID
-	Conn *websocket.Conn
-}
-
-func NewClient(conn *websocket.Conn) *Client {
-	return &Client{
-		ID:   uuid.New(),
-		Conn: conn,
-	}
+	ClearMessages()
+	ClearNotifications()
 }
 
 type Server struct {
 	clients map[*Client]bool
 	mu      sync.Mutex
 	Store
+	IPCache
 	websocket.Upgrader
 }
 
@@ -40,6 +30,7 @@ func NewServer(store Store) *Server {
 	return &Server{
 		clients: make(map[*Client]bool),
 		Store:   store,
+		IPCache: *NewIPCache(),
 		Upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -68,4 +59,5 @@ func (s *Server) RemoveClient(c *Client) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.clients, c)
+	// s.clients[c] = false
 }

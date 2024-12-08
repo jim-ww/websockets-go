@@ -16,12 +16,17 @@ func main() {
 	e.Use(middleware.Recover())
 
 	st := store.NewStore()
+
 	s := server.NewServer(st)
 	wsHandler := handler.New(s)
 
 	e.GET("/ws", wsHandler.HandleWS)
-	e.StaticFS("/", static.StaticFiles)
+
 	e.GET("/healthz", handler.Health)
+	e.DELETE("/notifications", wsHandler.ClearNotifications)
+	e.DELETE("/messages", wsHandler.ClearMessages)
+
+	e.StaticFS("/", static.StaticFiles)
 
 	e.Logger.Fatal(e.Start(":8082"))
 }
