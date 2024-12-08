@@ -20,6 +20,7 @@ func main() {
 
 	e.GET("/ws", wsHandler.HandleWS)
 	e.Static("/", "static")
+	e.GET("/healthz", handler.Health)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8082"))
 }

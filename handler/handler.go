@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 
 	"example.com/m/server"
 	"example.com/m/store"
@@ -100,6 +101,10 @@ func (wsh *WSHandler) sendNotifications(c echo.Context, conn *websocket.Conn) {
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(notificationsHTML)); err != nil {
 		c.Logger().Error(err)
 	}
+}
+
+func Health(c echo.Context) error {
+	return c.JSON(http.StatusOK, struct{ Status string }{Status: "OK"})
 }
 
 func readWriteLoop(c echo.Context, conn *websocket.Conn) error {
