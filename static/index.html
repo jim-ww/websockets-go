@@ -21,11 +21,12 @@
       </div>
     </section>
 
-    <section class="bg-slate-400 p-4 h-screen flex flex-col overflow-scroll">
+    <section class="bg-slate-400 p-4 h-screen flex overflow-y-auto flex-col max-h-[600px]">
       <h3 class="underline text-center text-xl">Messages</h3>
-      <div id="messages" hx-swap-oob="beforeend"></div>
-      <div class="grow"></div>
-      <form ws-send class="flex w-full">
+      <div class="flex-grow overflow-y-auto flex flex-col space-y-2">
+        <div id="messages" hx-swap-oob="beforeend"></div>
+      </div>
+      <form ws-send class="flex w-full mt-2">
         <input type="hidden" name="type" value="chat_message">
         <input type="text" name="content" class="p-2 rounded w-full" placeholder="Enter message" autofocus="true" />
         <button type="submit" class="bg-blue-600 rounded p-2 px-8">Send</button>
