@@ -10,19 +10,21 @@
   <link rel="stylesheet" href="tailwind.css" />
 </head>
 
-<body>
+<body class="overflow-hidden">
   <section hx-ext="ws" ws-connect="/ws" class="w-screen h-screen flex flex-col gap-4 p-4">
     <h1 class="font-extrabold text-2xl text-center">Websocket chat</h1>
 
-    <section class="bg-slate-400 p-4">
+    <section class="bg-slate-400 p-4 h-2/4 flex flex-col">
       <h3 class="underline text-center text-xl">Notifications</h3>
-      <div id="notifications" class="p-4" hx-swap-oob="beforeend"></div>
+      <div class="flex flex-col overflow-y-auto flex-grow max-h-48">
+        <div id="notifications" hx-swap-oob="beforeend"></div>
+      </div>
     </section>
 
-    <section class="bg-slate-400 p-4">
+    <section class="bg-slate-400 p-4 h-screen flex flex-col overflow-scroll">
       <h3 class="underline text-center text-xl">Messages</h3>
       <div id="messages" hx-swap-oob="beforeend"></div>
-      <br />
+      <div class="grow"></div>
       <form ws-send class="flex w-full">
         <input type="hidden" name="type" value="chat_message">
         <input type="text" name="content" class="p-2 rounded w-full" placeholder="Enter message" autofocus="true" />
